@@ -8,7 +8,7 @@
 #include maps\mp\gametypes_zm\_hud_util;
 #include maps\mp\gametypes_zm\_hud_message;
 
-drawLevelHUD()
+draw_level_hud()
 {
     self endon("disconnect");
 
@@ -28,7 +28,7 @@ drawLevelHUD()
     }
 }
 
-healthPlayer()
+draw_player_health()
 {
 	self endon("disconnect");
 	self.healthText = createFontString("Objective" , 1.7);
@@ -39,24 +39,30 @@ healthPlayer()
     }
 }
 
-drawZombiesCounter()
+draw_zombies_counter()
 {
     flag_wait("initial_blackscreen_passed");
 
     level.zombiesCounter = createServerFontString("objective", 1.6);
-    level.zombiesCounter setPoint("TOPLEFT", "TOPLEFT", -55, -30);
-    level.zombiesCounter setText("ZOMBIES: ^1--");
+    level.zombiesCounter setPoint("TOPLEFT", "TOPLEFT", -55, -35);
+    level.zombiesCounter.alpha = 1;
+
+    flicker = false;
 
     for (;;)
     {
         enemies = get_round_enemy_array().size + level.zombie_total;
 
-        if (enemies < 1) {
-            level.zombiesCounter setText("");
-        } else {
-            level.zombiesCounter setText("ZOMBIES: ^" + (enemies > 0 ? "1" : "2") + enemies);
+        if (enemies < 1)
+        {
+            level.zombiesCounter.alpha = 0;
+        }
+        else
+        {
+            level.zombiesCounter.alpha = 1;
+            level.zombiesCounter setText("ZOMBIES: ^1" + enemies);
         }
 
-        wait 0.1;
+        wait 0.5;
     }
 }

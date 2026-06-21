@@ -1,4 +1,6 @@
-changePerkLimit(amount)
+#include scripts\zm\_print;
+
+change_perk_limit(amount)
 {
     if (amount < 0)
         amount = 0;
@@ -6,5 +8,5 @@ changePerkLimit(amount)
         amount = 9;
 
     level.perk_purchase_limit = amount;
-    iprintln("Perk Limit: ^2" + amount);
+    print_small("Perk Limit: ^2" + amount);
 }

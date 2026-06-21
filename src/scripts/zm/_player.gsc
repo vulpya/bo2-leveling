@@ -9,21 +9,31 @@
 #include scripts\zm\_xp;
 #include scripts\zm\_hud;
 #include scripts\zm\_perks;
+#include scripts\zm\_visuals;
+#include scripts\zm\_print;
 
 #define MAX_HEALTH 150
 
-#define DEBUG_XP false
+#define DEBUG_XP true
 
-onPlayerConnect()
+on_player_connect()
 {
     for (;;)
     {
         level waittill("connected", player);
-        player thread onPlayerSpawnLoop();
+
+        map = getdvar("mapname");
+
+        if (map != "zm_nuked")
+        {
+            player thread fix_visuals();
+        }
+
+        player thread on_player_spawn_loop();
     }
 }
 
-onPlayerSpawnLoop()
+on_player_spawn_loop()
 {
     self endon("disconnect");
 
@@ -35,12 +45,12 @@ onPlayerSpawnLoop()
         {
             self.initialized = true;
 
-            self initPlayerXP();
-            self thread applyHealthTweaks();
-            self thread disableMeleeLunge();
+            self init_player_xp();
+            self thread apply_health_tweaks();
+            self thread disable_melee_lunge();
 
             if (DEBUG_XP)
-                self thread drawLevelHUD();
+                self thread draw_level_hud();
 
             if (!isDefined(level.bo4AmmoApplied))
             {
@@ -49,10 +59,10 @@ onPlayerSpawnLoop()
                     maps\mp\zombies\_zm_powerups::full_ammo_powerup,
                     ::bo4_max_ammo_powerup
                 );
-                self iprintln("BO4 Max-Ammo: ^2ON");
+                self print_small("BO4 Max-Ammo: ^2ON");
             }
 
-            self changePerkLimit(5);
+            self change_perk_limit(5);
         }
     }
 }
@@ -110,7 +120,7 @@ bo4_max_ammo_powerup(drop_item, player)
 /**
  * Health system
  */
-applyHealthTweaks()
+apply_health_tweaks()
 {
     self endon("disconnect");
     level endon("game_ended");
@@ -118,7 +128,7 @@ applyHealthTweaks()
     self.maxhealth = MAX_HEALTH;
     self.health = MAX_HEALTH;
 
-    self iprintln("3-Hit Down: ^2ON");
+    self print_small("3-Hit Down: ^2ON");
 
     for (;;)
     {
@@ -132,8 +142,8 @@ applyHealthTweaks()
 /**
  * Global dvar tweak to remove the annoying knife lunge.
  */
-disableMeleeLunge()
+disable_melee_lunge()
 {
     setDvar("aim_automelee_enabled", 0);
-    self iprintln("Melee Lunge: ^1OFF");
+    self print_small("Melee Lunge: ^1OFF");
 }

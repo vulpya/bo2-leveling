@@ -8,14 +8,15 @@
 #include maps\mp\gametypes_zm\_zm;
 #include maps\mp\gametypes_zm\_zm_stats;
 #include maps\mp\gametypes_zm\_zm_score;
+#include scripts\zm\_print;
 
-#define BASE_XP_PER_LEVEL 250
-#define BASE_XP_PER_KILL 50
+#define BASE_XP_PER_LEVEL 350
+#define BASE_XP_PER_KILL 10
 
 /**
  * Initializes XP-related player data.
  */
-initPlayerXP()
+init_player_xp()
 {
     if (!isDefined(self.prestige))
         self.prestige = 0;
@@ -26,10 +27,10 @@ initPlayerXP()
     if (!isDefined(self.xp))
         self.xp = 0;
 
-    self.xpToNext = getXPForLevel(self.playerLevel);
+    self.xpToNext = get_xp_for_level(self.playerLevel);
 }
 
-saveProgress()
+save_progress()
 {
     /* */
 }
@@ -40,7 +41,7 @@ saveProgress()
  * @param playerLevel Current player level.
  * @return XP needed to reach the next level.
  */
-getXPForLevel(playerLevel)
+get_xp_for_level(playerLevel)
 {
     return int(250 + (playerLevel * playerLevel * 150) + (playerLevel * playerLevel * playerLevel * 5));
 }
@@ -60,27 +61,27 @@ giveXP(amount)
     if (self.xp < self.xpToNext)
         return;
 
-    self levelUp();
+    self level_up();
 
     if (self.xp < 0)
         self.xp = 0;
 
-    self saveProgress();
+    self save_progress();
 }
 
 /**
  * Increases the player's level and recalculates
  * the XP required for the next level.
  */
-levelUp()
+level_up()
 {
     self.playerLevel++;
     self.xp -= self.xpToNext;
-    self.xpToNext = getXPForLevel(self.playerLevel);
+    self.xpToNext = get_xp_for_level(self.playerLevel);
     self checkPrestige();
-    self saveProgress();
+    self save_progress();
 
-    self thread showLevelUpMessage();
+    self thread show_level_up_message();
 }
 
 checkPrestige()
@@ -90,14 +91,14 @@ checkPrestige()
         self.playerLevel = 1;
         self.prestige++;
 
-        self iprintlnbold("^5PRESTIGE " + self.prestige + " UNLOCKED!");
+        self print_small("^5PRESTIGE " + self.prestige + " UNLOCKED!");
 
-        //self saveProgress();
+        self save_progress();
     }
 }
 
 
-showLevelUpMessage()
+show_level_up_message()
 {
     if(isDefined(self.lvlUpText))
         self.lvlUpText destroy();
@@ -122,7 +123,7 @@ showLevelUpMessage()
  * Once a zombie is detected as alive and not yet initialized,
  * it starts a separate thread to track its death event.
  */
-initZombieTracker()
+init_zombie_tracker()
 {
     for(;;)
     {
@@ -133,7 +134,7 @@ initZombieTracker()
             if(isDefined(zombie) && isAlive(zombie) && !isDefined(zombie.init))
             {
                 zombie.init = true;
-                zombie thread handleZombieDeath();
+                zombie thread handle_zombie_death();
             }
         }
 
@@ -155,12 +156,15 @@ initZombieTracker()
  * Event data:
  * - attacker: entity that caused the kill.
  */
-handleZombieDeath()
+handle_zombie_death()
 {
-    self waittill("death", attacker);
+    self waittill("death", attacker, mod);
 
-    if(isDefined(attacker) && isPlayer(attacker))
-    {
-        attacker giveXP(BASE_XP_PER_KILL);
-    }
+    if (!isDefined(attacker) || !isPlayer(attacker))
+        return;
+
+    wait 0.05;
+
+    attacker iprintlnbold("MOD: " + mod);
+    attacker giveXP(BASE_XP_PER_KILL);
 }
